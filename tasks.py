@@ -67,7 +67,7 @@ def evaluate_lead(row, prompt_template):
 
     position_key = next((key for key in row.keys() if re.match(r"(?i)title", key)), None)
     position = row.get(position_key, "Unknown Position")
-    prompt = prompt_template.replace("{{1.col6}}", position)
+    prompt = prompt_template.replace("[POSICION]", position)
 
     response = openai.ChatCompletion.create(
         model="gpt-4",
