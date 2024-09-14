@@ -70,7 +70,7 @@ def evaluate_lead(row, prompt_template):
     prompt = prompt_template.replace("[POSICION]", position)
 
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
