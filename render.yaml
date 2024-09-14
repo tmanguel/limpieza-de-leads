@@ -3,6 +3,7 @@ services:
     name: celery-worker
     region: ohio
     runtime: python
+    plan: starter
     buildCommand: "pip install -r requirements.txt"
     startCommand: "celery --app tasks worker --loglevel info --concurrency 4"
     autoDeploy: false
@@ -16,6 +17,7 @@ services:
     name: app
     region: ohio
     runtime: python
+    plan: free
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn app:app"
     autoDeploy: false
@@ -42,6 +44,6 @@ services:
   - type: redis
     name: celery-redis
     region: ohio
-    plan: starter # we choose a plan with persistence to ensure tasks are not lost upon restart
+    plan: free # we choose a plan with persistence to ensure tasks are not lost upon restart
     maxmemoryPolicy: noeviction # recommended policy for queues
     ipAllowList: [] # only allow internal connections
