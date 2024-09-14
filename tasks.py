@@ -16,7 +16,7 @@ logger = get_task_logger(__name__)
 
 
 @app.task
-def process_csv_task(self, csv_data, prompt_template, file_name):
+def process_csv_task(csv_data, prompt_template, file_name):
     try:
         # Convert CSV data to a file-like object using StringIO
         # csv_bytes = io.BytesIO(bytes(csv_data, 'utf-8'))
