@@ -23,6 +23,23 @@ def send_email(subject, body, to_emails):
     EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
     EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+    print("a")
+    print(EMAIL_HOST)
+    print(EMAIL_PORT)
+    print(EMAIL_HOST_USER)
+    print(EMAIL_HOST_PASSWORD)
+    print(EMAIL_USE_TLS)
+    EMAIL_HOST2 = os.getenv('EMAIL_HOST')
+    EMAIL_PORT2 = os.getenv('EMAIL_PORT')
+    EMAIL_HOST_USER2 = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD2 = os.getenv('EMAIL_HOST_PASSWORD')
+    EMAIL_USE_TLS2 = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+    print("b")
+    print(EMAIL_HOST2)
+    print(EMAIL_PORT2)
+    print(EMAIL_HOST_USER2)
+    print(EMAIL_HOST_PASSWORD2)
+    print(EMAIL_USE_TLS2)
 
     if not all([EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD]):
         logger.error("Email credentials are not fully provided in environment variables")
