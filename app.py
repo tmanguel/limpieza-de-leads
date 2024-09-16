@@ -14,6 +14,7 @@ def main():
 @app.route('/limpiar', methods=['POST'])
 def clean_lead_list():
     data = request.json
+    print(data)
     prompt_template = data.get("prompt")
     csv_data = data.get("file", {}).get("data")
     file_name = data.get("file", {}).get("name")    
