@@ -4,25 +4,64 @@ import re
 import json
 import csv
 import tempfile
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from celery import Celery
 from celery.utils.log import get_task_logger
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
-
 app = Celery('tasks', broker=os.getenv("CELERY_BROKER_URL"))
 logger = get_task_logger(__name__)
 
+def send_email(subject, body, to_emails):
+    # Get email credentials from environment variables
+    EMAIL_HOST = os.environ.get('EMAIL_HOST')
+    EMAIL_PORT = os.environ.get('EMAIL_PORT')
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+
+    if not all([EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD]):
+        logger.error("Email credentials are not fully provided in environment variables")
+        return
+    
+    # Ensure to_emails is a list even if it's a single string
+    if isinstance(to_emails, str):
+        to_emails = [to_emails]  # Convert single email to list
+
+    if not to_emails:
+        logger.error("Recipient emails not provided")
+        return
+
+
+
+    try:
+        # Create the email message
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_HOST_USER
+        msg['To'] = ', '.join(to_emails)  # Join email addresses into a single string
+        msg['Subject'] = subject
+
+        msg.attach(MIMEText(body, 'plain'))
+
+        # Set up the server
+        server = smtplib.SMTP(EMAIL_HOST, int(EMAIL_PORT))
+        if EMAIL_USE_TLS:
+            server.starttls()
+        server.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        logger.info("Email sent successfully")
+    except Exception as e:
+        logger.error(f"Failed to send email: {str(e)}")
 
 @app.task
 def process_csv_task(csv_data, prompt_template, file_name):
     try:
         # Convert CSV data to a file-like object using StringIO
-        # csv_bytes = io.BytesIO(bytes(csv_data, 'utf-8'))
-        # csv_input = io.TextIOWrapper(csv_bytes, encoding='utf-8')
-        # csv_reader = csv.DictReader(csv_input)
-
         csv_input = io.StringIO(csv_data)
         csv_reader = csv.DictReader(csv_input)
 
@@ -56,9 +95,21 @@ def process_csv_task(csv_data, prompt_template, file_name):
         # Clean up temporary file
         os.unlink(tmp_output.name)
 
+        # Send success email
+        subject = "File Processing Complete"
+        body = f"The file '{file_name}' has been processed and uploaded.\nYou can access it here: {file_link}"
+        send_email(subject, body, ["tomas.manguel@theleadgenerationguys.com", "abramson@theleadgenerationguys.com"])
+
         return {"message": "File processed and uploaded", "file_link": file_link}
     except Exception as e:
-        print(f"Error: {str(e)}")
+        error_message = f"Error processing file '{file_name}': {str(e)}"
+        print(error_message)
+
+        # Send error email
+        subject = "Error Processing File"
+        body = error_message
+        send_email(subject, body, "tomas.manguel@theleadgenerationguys.com")
+
         return {"error": str(e)}
 
 def evaluate_lead(row, prompt_template):
