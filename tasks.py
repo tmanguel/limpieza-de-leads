@@ -23,7 +23,8 @@ def process_csv_task(csv_data, prompt_template, file_name):
         # csv_input = io.TextIOWrapper(csv_bytes, encoding='utf-8')
         # csv_reader = csv.DictReader(csv_input)
 
-        csv_input = io.StringIO(csv_data)
+        csv_string = csv_data.decode('utf-8')
+        csv_input = io.StringIO(csv_string)
         csv_reader = csv.DictReader(csv_input)
 
         # Check if fieldnames are available
