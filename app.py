@@ -13,16 +13,29 @@ def main():
 
 @app.route('/limpiar', methods=['POST'])
 def clean_lead_list():
-    data = request.json
-    print(data)
-    prompt_template = data.get("prompt")
-    csv_data = data.get("file", {}).get("data")
-    file_name = data.get("file", {}).get("name")    
+    # Get the prompt from the form data
+    prompt_template = request.form.get('prompt')
     
+    # Get the uploaded file
+    file = request.files.get('file')
+    
+    if not prompt_template:
+        return jsonify({"error": "No prompt provided"}), 400
+
+    if not file:
+        return jsonify({"error": "No CSV file provided"}), 400
+
+    # Read the file content
+    try:
+        # Read the file content and decode it
+        csv_data = file.read().decode('utf-8')  # Adjust the encoding if needed
+    except UnicodeDecodeError:
+        return jsonify({"error": "Failed to decode file. Please ensure it's UTF-8 encoded."}), 400
+
+    file_name = file.filename
+
     print(f"Received csv_data: {csv_data}")
-    
-    if csv_data:
-        task = process_csv_task.delay(csv_data, prompt_template, file_name)
-        return jsonify({"message": "File processing started", "task_id": task.id}), 200
-    else:
-        return jsonify({"error": "No CSV data provided"}), 400
+
+    # Enqueue the task
+    task = process_csv_task.delay(csv_data, prompt_template, file_name)
+    return jsonify({"message": "File processing started", "task_id": task.id}), 200
