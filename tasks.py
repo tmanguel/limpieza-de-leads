@@ -72,15 +72,32 @@ def process_csv_task(csv_data, prompt_template, file_name):
 
         # Prepare output temporary file
         with tempfile.NamedTemporaryFile(mode='w+', newline='', delete=False, encoding='utf-8') as tmp_output:
-            fieldnames = csv_reader.fieldnames + ['Limpio']
+            # Include 'Bundle' in the fieldnames
+            fieldnames = csv_reader.fieldnames + ['Limpio', 'Bundle']
             csv_writer = csv.DictWriter(tmp_output, fieldnames=fieldnames)
             csv_writer.writeheader()
+
+            # Initialize company counts
+            company_counts = {}
 
             # Process each row
             for row in csv_reader:
                 if not isinstance(row, dict):
                     print(f"Expected row to be dict, but got {type(row)}: {row}")
                     continue  # Skip or handle the error as needed
+
+                # Find the company key (e.g., 'Organization Name' or 'Company')
+                company_key = next((key for key in row.keys() if re.match(r"(?i)(organization name|company|company name|organization)", key)), None)
+                company_name = row.get(company_key, "Unknown Company")
+
+                # Update the company count
+                company_counts.setdefault(company_name, {'count': 0})
+                company_counts[company_name]['count'] += 1
+                employee_number = company_counts[company_name]['count']
+
+                # Calculate the bundle number
+                bundle_number = (employee_number - 1) // 50 + 1
+                row['Bundle'] = bundle_number
 
                 row['Limpio'] = evaluate_lead(row, prompt_template)
                 csv_writer.writerow(row)
