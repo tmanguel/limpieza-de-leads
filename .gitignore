@@ -1,0 +1,17 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+.venv/
+
+# Archivos de test
+test_*.py
+*_test.py
+tests/
+
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
