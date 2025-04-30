@@ -278,7 +278,7 @@ def evaluate_lead(row, prompt_template):
 
         # Define generation configuration
         generation_config = genai.GenerationConfig(
-            max_output_tokens=1,
+            max_output_tokens=15,
             temperature=1.0 # Ensure it's a float
         )
 
